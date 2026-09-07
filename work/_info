@@ -1,0 +1,75 @@
+m255
+K4
+z2
+!s12c _opt
+Z0 !s99 nomlopt
+!s11f MIXED_VERSIONS
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z1 dC:/Users/memir/OneDrive/Belgeler/SC8-cpu
+T_opt
+!i145 1
+!i144 0
+!s110 1788813836
+VSD`3]<am^]4nj3?khN=D11
+04 16 4 work register_file_tb fast 0
+=1-4c2338b04d4d-6a9f220a-35d-3e14
+R0
+!s12f OEM100
+!s12b OEM100
+!s124 OEM10U2 
+!s135 nogc
+o-quiet -auto_acc_if_foreign -work work
+tCvgOpt 0 defaultOptions 1107585188
+n@_opt
+OL;O;2025.2;82
+vregister_file
+Z2 2rtl/register_file.v|sim/register_file_tb.v
+Z3 !s110 1788813802
+!i10b 1
+!s100 `[o4cZ0fWenlYkhXMc[h=1
+IRMh1`2[T:CQRG_0mE0;SG1
+R1
+w1788813778
+8rtl/register_file.v
+Frtl/register_file.v
+!i122 2
+L0 1 28
+Z4 VDg1SIo80bB@j0V0VzS_@n1
+Z5 OL;L;2025.2;82
+r1
+!s85 0
+31
+Z6 !s108 1788813802.000000
+Z7 !s107 sim/register_file_tb.v|rtl/register_file.v|
+Z8 !s90 -reportprogress|300|rtl/register_file.v|sim/register_file_tb.v|
+!i113 0
+Z9 o-L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z10 tCvgOpt 0 defaultOptions 1085333592
+vregister_file_tb
+R2
+R3
+!i10b 1
+!s100 B_59H]l;]R:ZCG6EafnEF3
+IPYG=`ImWzV[1XC56;NCYX2
+R1
+w1788812491
+8sim/register_file_tb.v
+Fsim/register_file_tb.v
+!i122 2
+L0 1 55
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
