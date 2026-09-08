@@ -175,3 +175,9 @@ application has been submitted:
   adding the comma.
 - ALU: no bugs encountered. Verified ADD/SUB/AND/OR against known operand
   pairs on first run.
+- PC: initial design used an unsigned branch_offset, which would have
+  silently miscalculated backward (negative) branches. Fixed by declaring
+  branch_offset as signed and wrapping it in $signed() during the branch
+  calculation. A dedicated backward-branch test (offset -5) was added
+  specifically to catch this, since a forward-only test would have passed
+  even with the broken unsigned version.
