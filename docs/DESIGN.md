@@ -170,6 +170,8 @@ application has been submitted:
   standardised real-world specification.
 
 ## Debugging Log
-
-(Entries to be added during development: what failed, what was initially
-suspected, and the actual root cause.)
+- Missing comma between `rt_addr` and `wr_data` in register_file.v's port
+  list caused a vlog syntax error on first compile attempt. Fixed by
+  adding the comma.
+- ALU: no bugs encountered. Verified ADD/SUB/AND/OR against known operand
+  pairs on first run.
