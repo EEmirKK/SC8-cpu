@@ -1,14 +1,16 @@
-module instr_mem (
-    input [4:0]  pc,      // address to fetch (PC value)
-    output [15:0] instr      // instruction word at that address
+module instr_mem #(
+    parameter INIT_FILE = "program.hex"
+) (
+    input  wire [4:0]  pc,
+    output wire [15:0] instr
 );
 
-    reg [15:0] mem [0:31];  // 32 instruction slots, 16 bits each
+    reg [15:0] mem [0:31];
 
     initial begin
-        $readmemh("program.hex", mem);
+        $readmemh(INIT_FILE, mem);
     end
-
+    
     assign instr = mem[pc];
 
 endmodule

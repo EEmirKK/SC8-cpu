@@ -1,15 +1,17 @@
-module data_mem (
-    input clk,
-    input we,
-    input [4:0]  addr,
-    input [15:0] wr_data,
-    output [15:0] rd_data
+module data_mem #(
+    parameter INIT_FILE = "data.hex"
+) (
+    input  wire        clk,
+    input  wire        we,
+    input  wire [4:0]  addr,
+    input  wire [15:0] wr_data,
+    output wire [15:0] rd_data
 );
 
-    reg [15:0] mem [0:31];  // 32 data words, 16 bits each
+    reg [15:0] mem [0:31];
 
     initial begin
-        $readmemh("data.hex", mem);  // preloads constants needed by the test program
+        $readmemh(INIT_FILE, mem);
     end
 
     always @(posedge clk) begin

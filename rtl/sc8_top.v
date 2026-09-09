@@ -1,7 +1,10 @@
-module sc8_top (
-    input clk,
-    input reset,
-    output uart_tx_out
+module sc8_top #(
+    parameter INSTR_FILE = "program.hex",
+    parameter DATA_FILE  = "data.hex"
+) (
+    input  wire clk,
+    input  wire reset,
+    output wire uart_tx_out
 );
 
     // Fetched instruction from instruction memory
@@ -30,7 +33,7 @@ module sc8_top (
         .halt(is_halt)
     );
 
-    instr_mem instr_mem_inst (
+    instr_mem #(.INIT_FILE(INSTR_FILE)) instr_mem_inst (
         .pc(pc_val),
         .instr(instr)
     );
