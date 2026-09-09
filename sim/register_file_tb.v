@@ -1,6 +1,7 @@
 module register_file_tb;
 
     reg         clk;
+    reg         reset;
     reg         we;
     reg  [2:0]  rd_addr, rs_addr, rt_addr;
     reg  [15:0] wr_data;
@@ -8,6 +9,7 @@ module register_file_tb;
 
     register_file uut (
         .clk(clk),
+        .reset(reset),
         .we(we),
         .rd_addr(rd_addr),
         .rs_addr(rs_addr),
@@ -21,21 +23,39 @@ module register_file_tb;
     always #5 clk = ~clk;
 
     initial begin
+        // --- Reset first, so no register starts undefined ---
+        reset = 1;
+        we = 0;
+        rd_addr = 3'b000;
+        rs_addr = 3'b000;
+        rt_addr = 3'b000;
+        wr_data = 16'd0;
+        @(posedge clk);
+        reset = 0;
+
         // --- Test 1: normal write, then read back ---
         we      = 1;
         rd_addr = 3'b011;   // R3
-        wr_data = 16'd24;
+        wr_data = 16'd42;
         @(posedge clk);     // wait for the write to actually happen
 
         we      = 0;
         rs_addr = 3'b011;   // read back R3
         #1;                 // let the combinational read settle
-        if (rs_data == 16'd24)
-            $display("PASS: Test 1 - R3 correctly holds 24");
+        if (rs_data == 16'd42)
+            $display("PASS: Test 1 - R3 correctly holds 42");
         else
-            $display("FAIL: Test 1 - expected 24, got %d", rs_data);
+            $display("FAIL: Test 1 - expected 42, got %d", rs_data);
 
-        // --- Test 2: attempting to write to R0 is ignored ---
+        // --- Test 2: R0 reads as 0, even though nothing was ever written to it ---
+        rs_addr = 3'b000;   // R0
+        #1;
+        if (rs_data == 16'd0)
+            $display("PASS: Test 2 - R0 reads as 0 without being written");
+        else
+            $display("FAIL: Test 2 - expected 0, got %d", rs_data);
+
+        // --- Test 3: attempting to write to R0 is ignored ---
         we      = 1;
         rd_addr = 3'b000;   // try to write to R0
         wr_data = 16'd99;   // a value that should NEVER actually land in R0
@@ -45,9 +65,9 @@ module register_file_tb;
         rs_addr = 3'b000;
         #1;
         if (rs_data == 16'd0)
-            $display("PASS: Test 2 - write to R0 was correctly ignored");
+            $display("PASS: Test 3 - write to R0 was correctly ignored");
         else
-            $display("FAIL: Test 2 - R0 changed to %d, write should have been blocked", rs_data);
+            $display("FAIL: Test 3 - R0 changed to %d, write should have been blocked", rs_data);
 
         $stop;
     end

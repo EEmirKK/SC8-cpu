@@ -181,3 +181,17 @@ application has been submitted:
   calculation. A dedicated backward-branch test (offset -5) was added
   specifically to catch this, since a forward-only test would have passed
   even with the broken unsigned version.
+  - Integration: STORE/BEQ initially wrote to the wrong register, because the
+  I-type "second register" role was read from a fixed bit position ([6:4])
+  that's only valid for R-type instructions. Fixed by muxing the register
+  file's rt_addr between rd_field (I-type) and rt_field (R-type), based on
+  opcode.
+- Integration: after HALT executed, the PC kept incrementing into
+  uninitialized instruction memory, fetching unknown ('x') instructions
+  that corrupted already-correct results. Fixed by adding a halt signal to
+  pc.v that freezes the PC once HALT is decoded.
+- Integration: SUB R2,R2,R2 (intended to zero the accumulator) produced 'x',
+  not 0, because R2 held Verilog's unknown state at power-up - x - x
+  evaluates to x, not 0. Fixed by adding a reset to register_file.v that
+  explicitly clears all 8 registers to 0 at startup, rather than relying on
+  program logic to avoid ever using an undefined register.

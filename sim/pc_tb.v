@@ -4,6 +4,7 @@ module pc_tb;
     reg               reset;
     reg               branch_taken;
     reg signed [6:0]  branch_offset;
+    reg               halt;
     wire [4:0]        pc_out;
 
     pc uut (
@@ -11,6 +12,7 @@ module pc_tb;
         .reset(reset),
         .branch_taken(branch_taken),
         .branch_offset(branch_offset),
+        .halt(halt),
         .pc_out(pc_out)
     );
 
@@ -22,6 +24,7 @@ module pc_tb;
         reset = 1;
         branch_taken = 0;
         branch_offset = 7'd0;
+        halt = 0;
         @(posedge clk);
         #1;
         if (pc_out == 5'd0)
@@ -67,6 +70,17 @@ module pc_tb;
             $display("PASS: Test 4 - backward branch: 7 + (-5) = 2");
         else
             $display("FAIL: Test 4 - expected 2, got %d", pc_out);
+
+        // --- Test 5: halt freezes the PC, even with branch_taken still set ---
+        branch_taken = 0;
+        halt = 1;
+        @(posedge clk);   // should NOT increment past 2
+        @(posedge clk);   // should still hold at 2
+        #1;
+        if (pc_out == 5'd2)
+            $display("PASS: Test 5 - halt correctly froze PC at 2");
+        else
+            $display("FAIL: Test 5 - expected 2 (frozen), got %d", pc_out);
 
         $stop;
     end
