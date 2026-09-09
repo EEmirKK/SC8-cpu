@@ -15,13 +15,12 @@ LED status output.
 | rtl/data_mem.v | Data RAM (32 x 16-bit), loaded via `$readmemh` from data.hex. | Done, verified |
 | rtl/cu.v | Opcode decode into reg_we, mem_we, alu_op, alu_src. | Done, verified |
 | rtl/sc8_top.v | Top-level datapath. Wires all modules together, decodes instruction fields, resolves alu_src, rt_addr, branch_taken, halt, and writeback muxes. | Done, verified end-to-end against program.hex |
-| rtl/baud_gen.v | UART baud rate tick generator (50 MHz system clock to 9600 baud). | In progress |
-| rtl/uart_tx.v | UART transmitter, driven by baud_gen ticks. | Not started |
-| quartus/ | Quartus project files, target device (Cyclone IV, EP4CE22F17C6), pin assignments. | Project created. Pin assignment and synthesis not yet done |
+| rtl/baud_gen.v | UART baud rate tick generator (50 MHz system clock to 9600 baud). | Done, verified |
+| rtl/uart_tx.v | UART transmitter, driven by baud_gen ticks. | Done, verified |
+| quartus/ | Quartus project files, target device (Cyclone IV, EP4CE22F17C6), pin assignments. | Done, verified |
 
-This table tracks structure and status only. Reasoning for individual design
-choices is documented in the sections below. This table is not a substitute
-for them.
+This table tracks structure and status. Reasoning for individual design choices \
+is documented in the sections below.
 
 ## Architecture Overview
 
@@ -242,6 +241,15 @@ Both programs load via sc8_top's INSTR_FILE/DATA_FILE parameters, which
 default to program.hex/data.hex so the primary testbench and eventual
 hardware deployment are unaffected by the second program's existence.
 
+## Assembler
+
+tools/assembler.py (Python) converts SC8 mnemonics into hex, using the same
+opcode/format table as the Instruction Set section above.
+
+Verified byte-for-byte against both existing test programs' hand-encoded
+hex, confirming the assembler and the original hand-encoding are both
+correct.
+
 ## Output
 
 Program output is observed via two channels. a memory-mapped UART peripheral
@@ -287,6 +295,9 @@ plain free-running counter is sufficient here.
   "Register Field Width" above.
 - 2026-09-09: 9600 baud was chosen for UART as a simple, reliable,
   commonly-used rate for a project at this scale.
+- 2026-09-09: Built a minimal Python assembler (mnemonic to hex), deferred
+  from the original timeline until the core CPU was complete. Verified
+  against both test programs' hand-encoded hex.
 
 ## Deferred to a Later Phase
 
@@ -294,9 +305,6 @@ The following were considered and deliberately excluded from the initial
 build, to be revisited once the core CPU is complete and any related
 application has been submitted.
 
-- **Minimal assembler** (mnemonic to hex, written in Python). Would
-  demonstrate understanding of the software side of the hardware/software
-  interface, but is not required to demonstrate a working CPU.
 - **Dedicated immediate-arithmetic instructions** (ADDI, ANDI, ORI). Would
   remove the need to route constants through memory via LOAD, at the cost of
   a wider opcode field and reduced register-field or offset space.
@@ -361,3 +369,49 @@ application has been submitted.
   file issue) exposed it. Fixed by updating the instantiation to "cu cu_inst".
   Both test programs were rerun against the clean build to confirm nothing
   else had been relying on stale cached modules.
+- 2026-09-09: Assembler initially miscoded BEQ's operand order, caught by
+  diffing generated hex against the hand-encoded program.hex. Fixed in
+  assemble_line().
+- 2026-09-09: Initial synthesis used the wrong pin for the system clock,
+  causing no clock activity. Fixed by assigning clk to the correct
+  pin (R8) per the DE0-Nano's user manual.
+- 2026-09-09: Several other pin assignments were initially incorrect, causing 
+the LEDs to not function. Corrected against the DE0-Nano pinout reference.
+
+## Reflection
+
+The hardest part of this project wasn't any single instruction or module.
+It was adjusting to how Verilog actually executes. Coming from software,
+I kept mentally reading code top to bottom, as if each line ran after the
+one before it. Combinational logic was completely different: an `assign` or
+`always @(*)` block isn't a sequence of steps that runs once, it's a
+description of a circuit that is continuously, simultaneously active,
+always reflecting whatever its current inputs are. Several early bugs
+(the register-reset issue, the sign-extension issue) trace back to me
+still half-thinking in a sequential, run-once mental model when the
+hardware genuinely didn't behave that way.
+
+Some of the most useful lessons came from bugs that only appeared once
+the design was integrated, not from any individual module in isolation.
+Every module passed its own testbench before I ever wired them together,
+but real bugs still showed up at integration: the wrong bit field being
+read for an I-type register, the PC not stopping after HALT, and
+`x - x` not evaluating to zero the way I assumed it would. None of these
+were caught by unit testing alone. They only became visible once the
+full datapath actually ran a real program end to end, which is why I'd
+treat integration testing as just as essential as per-module testing on
+any future project, not an afterthought once the pieces "should" work.
+
+I'm proud that SC8 is a genuinely self-designed ISA, not a RISC-V subset.
+Every field width, every register count, and the zero-register decision
+were choices I made and can defend, not values inherited from a spec.
+Comparing the design against real reference material (UCL's ELEC0004
+microarchitecture) partway through, rather than at the start, was also a
+good decision, as it let me revise the register count with a clear
+justification instead of guessing at the outset.
+
+If I built this again, I'd set up a clean simulation workflow (a proper
+`work` library reset habit, consistent module naming) from day one. I
+would also learn a bit more Verilog before starting the project, as 
+sometimes it was difficult learning as I built even though it was relatively 
+efficient.
