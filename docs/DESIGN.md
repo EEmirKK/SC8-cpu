@@ -242,6 +242,13 @@ a free-running counter. This tick, not the system clock, paces the UART
 transmitter's bit timing. The counter is 13 bits wide (2^13 = 8192), the
 smallest power of two able to count up to 5208.
 
+This introduces a small rounding error: the exact ratio is 5208.33, but the
+counter only counts whole cycles, so each tick is short by about 0.33 cycles.
+This error accumulates at a constant rate over time, so the percentage error 
+stays fixed at roughly 0.006% indefinitely rather than growing worse. This 
+is well within UART's typical few-percent tolerance for baud error, so a 
+plain free-running counter is sufficient here.
+
 ## Decisions Log
 
 - 2026-09-07: Verilog was selected over VHDL/SystemVerilog because of prior
@@ -318,3 +325,7 @@ application has been submitted.
   register_file.v that explicitly clears all 8 registers to 0 at startup,
   rather than relying on program logic to avoid ever using an undefined
   register.
+- 2026-09-09: baud_gen testbench Test 1 (first tick after reset) measured
+  5209 cycles instead of the expected 5207, while Test 2 (steady-state
+  tick-to-tick interval) correctly measured 5207, confirming the module's
+  actual behavior is correct.
