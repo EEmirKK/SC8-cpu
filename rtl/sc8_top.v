@@ -1,6 +1,7 @@
 module sc8_top (
     input clk,
-    input reset
+    input reset,
+    output uart_tx_out
 );
 
     // Fetched instruction from instruction memory
@@ -99,5 +100,28 @@ module sc8_top (
     wire is_beq = (opcode == 3'b110);
     wire alu_zero = (alu_result == 16'd0);
     assign branch_taken = is_beq && alu_zero;
+
+    // --- UART output ---
+    wire baud_tick;
+    wire uart_busy;
+
+    baud_gen baud_gen_inst (
+        .clk(clk),
+        .reset(reset),
+        .baud_tick(baud_tick)
+    );
+
+    // Trigger: STORE to data memory address 31 sends the low byte over UART
+    wire uart_store = mem_we && (alu_result[4:0] == 5'd31);
+
+    uart_tx uart_tx_inst (
+        .clk(clk),
+        .reset(reset),
+        .baud_tick(baud_tick),
+        .tx_start(uart_store),
+        .tx_data(rt_data[7:0]),
+        .tx(uart_tx_out),
+        .tx_busy(uart_busy)
+    );
 
 endmodule
