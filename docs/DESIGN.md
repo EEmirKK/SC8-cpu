@@ -219,6 +219,29 @@ exercises LOAD, ADD, SUB, both BEQ roles (conditional exit and unconditional
 loop-back), STORE, and HALT. AND and OR are not exercised by this program.
 They are verified independently in alu_tb.v and cu_tb.v.
 
+## Testing
+
+Two integrated test programs were used to test the full datapath end to end, 
+beyond the individual module testbenches (register_file_tb.v, alu_tb.v, etc.).
+
+**program.hex / data.hex** — the primary test program. Sums a counter
+counting down from 3 to 0 into an accumulator, storing the result to data
+memory address 2 and echoing it to UART via address 31. Exercises LOAD,
+ADD, SUB, both BEQ roles (conditional exit and unconditional loop-back),
+STORE, and HALT.
+
+**program2.hex / data2.hex** — a second program covering what the first
+does not: AND, OR, BEQ's not-taken path, and a LOAD/STORE round trip using
+a non-zero base register (rather than R0, as every address calculation in
+the first program uses). Checked with sc8_top_tb2.v, which prints all
+computed registers and asserts on the two results that would most likely
+expose a real bug: the BEQ-not-taken outcome and the non-zero-base address
+calculation.
+
+Both programs load via sc8_top's INSTR_FILE/DATA_FILE parameters, which
+default to program.hex/data.hex so the primary testbench and eventual
+hardware deployment are unaffected by the second program's existence.
+
 ## Output
 
 Program output is observed via two channels. a memory-mapped UART peripheral
@@ -329,3 +352,12 @@ application has been submitted.
   5209 cycles instead of the expected 5207, while Test 2 (steady-state
   tick-to-tick interval) correctly measured 5207, confirming the module's
   actual behavior is correct.
+- 2026-09-09: sc8_top.v instantiated the control unit as "control_unit
+  cu_inst", the module's name before it was renamed to "cu". This had been
+  silently masked because the Questa work library, never cleared since the
+  start of the project, retained a stale compiled "control_unit" definition
+  from before the rename, so the mismatch never surfaced. Deleting the work
+  library to force a clean rebuild (while debugging an unrelated stale hex
+  file issue) exposed it. Fixed by updating the instantiation to "cu cu_inst".
+  Both test programs were rerun against the clean build to confirm nothing
+  else had been relying on stale cached modules.

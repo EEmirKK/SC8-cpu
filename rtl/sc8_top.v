@@ -44,7 +44,7 @@ module sc8_top #(
     wire [1:0] alu_op;
     wire alu_src;
 
-    control_unit cu_inst (
+    cu cu_inst (
         .opcode(opcode),
         .reg_we(reg_we),
         .mem_we(mem_we),
@@ -87,7 +87,7 @@ module sc8_top #(
     // Data memory
     wire [15:0] mem_rd_data;
 
-    data_mem data_mem_inst (
+    data_mem #(.INIT_FILE(DATA_FILE)) data_mem_inst (
         .clk(clk),
         .we(mem_we),
         .addr(alu_result[4:0]),
