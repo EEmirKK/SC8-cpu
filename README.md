@@ -28,9 +28,9 @@ rtl/          Verilog source for every module (register file, ALU, PC,
 sim/          Testbenches for every module, plus two full end-to-end
               test programs run through the complete CPU
 quartus/      Quartus project files and pin assignments for the DE0-Nano
-tools/        A minimal Python assembler (mnemonics -> hex), verified
+tools/        A minimal Python assembler (mnemonics -> hex)
               byte-for-byte against the hand-encoded test programs
-docs/         DESIGN.md -- full architecture, reasoning, and debugging log
+docs/         DESIGN.md: full architecture, reasoning, and debugging log
 *.hex         Hand-encoded and assembler-generated test programs and data
 ```
 
